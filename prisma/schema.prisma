@@ -1,0 +1,35 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model News {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  image     String
+  createdAt DateTime @default(now())
+}
+
+model Property {
+  id          Int      @id @default(autoincrement())
+  title       String
+  location    String
+  price       Float
+  image       String
+  description String
+  createdAt   DateTime @default(now())
+}
+
+model Renovation {
+  id          Int      @id @default(autoincrement())
+  title       String
+  image       String
+  description String
+  createdAt   DateTime @default(now())
+}
