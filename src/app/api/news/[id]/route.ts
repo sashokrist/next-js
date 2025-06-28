@@ -1,18 +1,13 @@
-import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest) {
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop();
+
     const item = await prisma.news.findUnique({
-        where: { id: Number(params.id) },
+        where: { id: Number(id) },
     });
-    return NextResponse.json(item);
-}
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-    const data = await req.json();
-    const updated = await prisma.news.update({
-        where: { id: Number(params.id) },
-        data,
-    });
-    return NextResponse.json(updated);
+    return NextResponse.json(item);
 }

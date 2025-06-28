@@ -18,9 +18,12 @@ export default function CreatePropertyPage() {
         formData.append('location', data.location);
         formData.append('price', data.price);
         formData.append('description', data.description);
-        if (data.image[0]) {
-            formData.append('image', data.image[0]); // get the first file
-        }
+
+        // Append up to 6 images
+        const files = Array.from(data.images).slice(0, 6);
+        files.forEach((file: File, index) => {
+            formData.append(`images[]`, file);
+        });
 
         try {
             const res = await fetch('/api/properties', {
@@ -59,8 +62,16 @@ export default function CreatePropertyPage() {
                     <Form.Control type="number" step="0.01" {...register('price')} required />
                 </Form.Group>
                 <Form.Group className="mb-3">
-                    <Form.Label>Image</Form.Label>
-                    <Form.Control type="file" accept="image/*" {...register('image')} required />
+                    <Form.Label>Images (up to 6)</Form.Label>
+                    <Form.Control
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        {...register('images', {
+                            validate: files => files.length <= 6 || "You can upload up to 6 images",
+                        })}
+                        required
+                    />
                 </Form.Group>
                 <Form.Group className="mb-3">
                     <Form.Label>Description</Form.Label>

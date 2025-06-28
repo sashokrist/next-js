@@ -17,13 +17,20 @@ model News {
 }
 
 model Property {
-  id          Int      @id @default(autoincrement())
+  id          Int             @id @default(autoincrement())
   title       String
   location    String
   price       Float
-  image       String
   description String
-  createdAt   DateTime @default(now())
+  createdAt   DateTime        @default(now())
+  images      PropertyImage[]
+}
+
+model PropertyImage {
+  id          Int      @id @default(autoincrement())
+  property    Property @relation(fields: [property_id], references: [id], onDelete: Cascade)
+  property_id Int
+  image_path  String
 }
 
 model Renovation {
