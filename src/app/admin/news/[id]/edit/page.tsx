@@ -15,41 +15,54 @@ export default function EditNewsPage() {
         fetch(`/api/news/${id}`)
             .then(res => res.json())
             .then(data => {
-                reset(data); // populate form
+                reset(data);
                 setLoading(false);
             });
-    }, [id, reset]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [id]);
 
     const onSubmit = async (data: any) => {
-        await fetch(`/api/news/${id}`, {
+        const res = await fetch(`/api/news/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
 
+        if (!res.ok) {
+            const error = await res.json();
+            alert(error.error || 'Failed to update news');
+            return;
+        }
+
         router.push('/admin/news');
     };
 
-    if (loading) return <Spinner animation="border" />;
+    if (loading) {
+        return (
+            <Container className="text-center my-5">
+                <Spinner animation="border" role="status" />
+            </Container>
+        );
+    }
 
     return (
         <Container>
             <h1>Edit News</h1>
-    <Form onSubmit={handleSubmit(onSubmit)}>
-    <Form.Group className="mb-3">
-        <Form.Label>Title</Form.Label>
-        <Form.Control {...register('title')} required />
-    </Form.Group>
-    <Form.Group className="mb-3">
-        <Form.Label>Image URL</Form.Label>
-    <Form.Control {...register('image')} required />
-    </Form.Group>
-    <Form.Group className="mb-3">
-    <Form.Label>Content</Form.Label>
-    <Form.Control as="textarea" rows={5} {...register('content')} required />
-    </Form.Group>
-    <Button type="submit">Update</Button>
-        </Form>
+            <Form onSubmit={handleSubmit(onSubmit)}>
+                <Form.Group className="mb-3">
+                    <Form.Label>Title</Form.Label>
+                    <Form.Control {...register('title')} required />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                    <Form.Label>Image URL</Form.Label>
+                    <Form.Control {...register('image')} required />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                    <Form.Label>Content</Form.Label>
+                    <Form.Control as="textarea" rows={5} {...register('content')} required />
+                </Form.Group>
+                <Button type="submit">Update</Button>
+            </Form>
         </Container>
-);
+    );
 }
