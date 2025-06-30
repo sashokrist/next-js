@@ -1,47 +1,82 @@
 'use client';
-// app/property/[id]/page.tsx
 
-import { notFound } from 'next/navigation';
-import prisma from '@/lib/prisma';
-import { Container, Row, Col, Image, Card } from 'react-bootstrap';
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { Container, Card, Button, Spinner } from 'react-bootstrap';
+import Link from 'next/link';
 
-export default async function PropertyDetail({ params }: { params: { id: string } }) {
-    const property = await prisma.property.findUnique({
-        where: { id: parseInt(params.id) },
-        include: { images: true },
-    });
+interface Property {
+  id: number;
+  title: string;
+  description: string;
+  location: string;
+  price: number;
+  images: { image_path: string }[];
+}
 
-    if (!property) return notFound();
+export default function PropertyDetailsPage() {
+  const { id } = useParams();
+  const [property, setProperty] = useState<Property | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchProperty = async () => {
+      try {
+        const res = await fetch(`/api/properties/${id}`);
+        const data = await res.json();
+        setProperty(data);
+      } catch (err) {
+        console.error('Failed to fetch property:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperty();
+  }, [id]);
+
+  if (loading) {
     return (
-        <Container className="py-5">
-            <h1 className="mb-3">{property.title}</h1>
-            <p><strong>📍 Location:</strong> {property.location}</p>
-            <p><strong>💰 Price:</strong> ${property.price.toLocaleString()}</p>
-            <p>{property.description}</p>
-
-            {/* Image Grid */}
-            {property.images.length > 0 && (
-                <Row className="g-3 mb-4">
-                    {property.images.map((img, idx) => (
-                        <Col key={idx} xs={12} sm={6} md={4}>
-                            <Image
-                                src={img.image_path}
-                                alt={`Property image ${idx + 1}`}
-                                thumbnail
-                                style={{ objectFit: 'cover', width: '100%', height: '250px' }}
-                            />
-                        </Col>
-                    ))}
-                </Row>
-            )}
-
-            <Card>
-                <Card.Body>
-                    <h5>Contact us for more information</h5>
-                    <p>Email: <a href="mailto:info@dreamhomes.com">info@dreamhomes.com</a></p>
-                </Card.Body>
-            </Card>
-        </Container>
+      <Container className="py-5 text-center">
+        <Spinner animation="border" />
+      </Container>
     );
+  }
+
+  if (!property) {
+    return (
+      <Container className="py-5 text-center">
+        <h2>Property Not Found</h2>
+        <Link href="/" passHref>
+          <Button as="a" variant="secondary" className="mt-3">← Back to Home</Button>
+        </Link>
+      </Container>
+    );
+  }
+
+  return (
+    <Container className="py-5">
+      <Card className="shadow-sm">
+        <Card.Img
+          variant="top"
+          src={property.images?.[0]?.image_path || '/placeholder.jpg'}
+          alt={property.title}
+          style={{ height: '400px', objectFit: 'cover' }}
+        />
+        <Card.Body>
+          <Card.Title>{property.title}</Card.Title>
+          <Card.Text>
+            <strong>📍 Location:</strong> {property.location}<br />
+            <strong>💰 Price:</strong> {property.price ? `$${property.price.toLocaleString()}` : 'N/A'}<br /><br />
+            {property.description}
+          </Card.Text>
+          <Link href="/" passHref>
+            <Button as="a" variant="secondary" className="mt-3">← Back to Home</Button>
+          </Link>
+        </Card.Body>
+      </Card>
+    </Container>
+  );
 }
